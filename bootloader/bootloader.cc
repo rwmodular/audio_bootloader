@@ -24,10 +24,15 @@
 // Tom Waters 2024
 
 #include <stdio.h>
+#include <cstring>
 #include "pico/stdlib.h"
 #include "hardware/adc.h"
 #include "hardware/flash.h"
 #include "hardware/sync.h"
+
+#include "qpsk/packet_decoder.h"
+#include "qpsk/demodulator.h"
+using namespace stm_audio_bootloader;
 
 // where the firmware starts (32K reserved for bootloader)
 #define FIRMWARE_START_ADDR (32 * 1024)
@@ -58,7 +63,7 @@ uint8_t rx_buffer[FLASH_SECTOR_SIZE];
 volatile UiState ui_state;
 
 // Address of binary information header
-uint8_t *flash_target_contents = (uint8_t *) (XIP_BASE + IMAGE_HEADER_OFFSET + 0xD4);
+uint8_t *flash_target_contents = (uint8_t *) (XIP_BASE + FIRMWARE_START_ADDR + 0xD4);
 
 // Set VTOR register, set stack pointer, and jump to the reset
 // vector in our application. Basically copied from crt0.S.
@@ -74,7 +79,7 @@ static inline void handleBranch() {
     "msr msp, r0\n"
     "bx r1\n"
     :
-    : [start] "r" (XIP_BASE + IMAGE_HEADER_OFFSET), [vtable] "X" (PPB_BASE + M0PLUS_VTOR_OFFSET)
+    : [start] "r" (XIP_BASE + FIRMWARE_START_ADDR), [vtable] "X" (PPB_BASE + FIRMWARE_START_ADDR)
     :
     );
 }

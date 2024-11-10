@@ -1,1 +1,4 @@
 */build/*
+*.pyc
+.vscode
+pico_sdk_import.cmake
